@@ -1,20 +1,20 @@
 #lang racket/base
 
-(provide ui-loop)
+(provide ui-loop working done)
 
 (require (prefix-in mat/ racket/match))
 
 (struct ui-loop (format-str update update-interval done))
 
 (define (working ui)
-  (mat/match-define (ui-loop fmtstr update interval _) ui)
-  (for ([s update])
+  (mat/match-let ([(ui-loop fmtstr update interval _) ui])
+    (for ([s update])
     (display (format fmtstr s))
-    (sleep interval)))
+    (sleep interval))))
 
 (define (done ui)
-  (mat/match-define (ui-loop fmtstr _ _ done) ui)
-  (displayln (format fmtstr done)))
+  (mat/match-let ([(ui-loop fmtstr _ _ done) ui])
+    (displayln (format fmtstr done))))
 
 #;(begin
   (working (ui-loop "\rxxx [~a]" '("|" "/" "-" "\\") 0.2 "x"))
