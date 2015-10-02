@@ -51,3 +51,14 @@
   (let ([f (file/make-temporary-file)])
     (file/display-to-file str f #:exists 'truncate)
     (path->string f)))
+
+(define (write-data relative-path data)
+  (with-output-to-file
+    (build-path (current-directory) relative-path)
+    (lambda () (write data))
+    #:exists 'truncate))
+
+(define (read-data relative-path)
+  (with-input-from-file
+    (build-path (current-directory) relative-path)
+    (lambda () (read))))
