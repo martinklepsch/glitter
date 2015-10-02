@@ -148,8 +148,8 @@
           (aws 'create-access-key (hash 'UserName name))
           (aws 'create-bucket (hash 'BucketName name)))))
 
-(define (save-cmds aws-cmds)
-  )
+(define (aws-save-cmds aws-cmds)
+  ())
 
 (define (report results)
   (let ([bucket-name (hash-ref (parse-success (first results)) 'UserName)]
