@@ -7,6 +7,7 @@
 (require (prefix-in str/ racket/string))
 (require (prefix-in mat/ racket/match))
 (require (prefix-in ui/  "ui.rkt"))
+(require (prefix-in util/ "util.rkt"))
 
 (define-syntax-rule (while condition body ...)
   (let loop ()
@@ -14,7 +15,8 @@
       body ...
       (loop))))
 
-(provide process)
+(provide (all-defined-out))
+;; (provide success failure process run-cmds)
 
 (struct success (stdout))
 (struct failure (code stderr))
@@ -38,12 +40,12 @@
                   (channel-put out (task (channel-get in)))
                   (loop)))))
 
-(define (wait-for ch)
+
+(define (wait-for ch feedback)
   (let loop ()
     (mat/match (channel-try-get ch)
-               [#f (ui/working fb) (loop)]
-               [v  (ui/done fb) (displayln (format "Got value from process-out: ~a" v)) v])))
-
+               [#f (ui/working feedback) (loop)]
+               [v  (ui/done feedback) v])))
 
 ;; (define (add msg acc) (sleep 1) (displayln (format "received: ~a" msg)) (+ acc msg))
 ;; (define (additive-workq task start in out)
@@ -55,17 +57,40 @@
 ;; (define worker (additive-workq add 0 process-in process-out))
 
 ;; (kill-thread worker)
-(define fb (ui/ui-loop "\rComputing --------- [~a]" '("|" "/" "-" "\\") 0.2 "x"))
-#;(begin
-  (define process-in (make-channel))
-  (define process-out (make-channel))
-  (define worker (workq process process-in process-out))
-  (for/fold ([done (hash)])
-            ([x '("ls" "ls /" "ls /x")])
-    (channel-put process-in x)
-    (mat/match (wait-for process-out)
-      [(success _) (hash-set done x success)]
-      [(failure _ stderr) (displayln (format "~a failed with ~a" x stderr))])))
+
+(define in (make-channel))
+(define out (make-channel))
+(define worker (workq process in out))
+
+(define (default-feedback n)
+  (make-list n (ui/ui-loop "\rcomputing --------- [~a]" '("|" "/" "-" "\\") 0.2 "x")))
+
+(define (run-cmds cmds
+                  #:verbose [verbose #f]
+                  #:feedbacks [feedbacks #f])
+  (for/fold ([results '()])
+            ([cmd  cmds]
+             [fb   (or feedbacks (default-feedback (length cmds)))])
+    (channel-put in cmd)
+    (let ([result (wait-for out fb)])
+      (cond [(success? result)
+             (append results (list result))]
+            [(failure? result)
+             (begin
+               (when verbose
+                 (util/df "~a failed with ~a" cmd (failure-stderr result)))
+               (append results (list result)))]))))
+
+;; (begin
+;;   (define process-in (make-channel))
+;;   (define process-out (make-channel))
+;;   (define worker (workq process process-in process-out))
+;;   (for/fold ([done (hash)])
+;;             ([x '("ls" "ls /" "ls /x")])
+;;     (channel-put process-in x)
+;;     (mat/match (wait-for process-out)
+;;       [(success _) (hash-set done x success)]
+;;       [(failure _ stderr) (displayln (format "~a failed with ~a" x stderr))])))
 
 ;; (for/fold ([res '()])
 ;;           ([x '(1 2 3 -2)])
