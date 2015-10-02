@@ -1,11 +1,20 @@
-#lang racket/base
+#lang racket
 
 (require (prefix-in file/ racket/file))
+(require (prefix-in list/ racket/list))
 
-(provide assoc keyword->symbol string->file)
+(provide df assoc hash-ref-in keyword->symbol string->file)
+
+(define (df fmtstr . args)
+  (displayln (apply format fmtstr args)))
 
 (define (keyword->symbol kw)
   (string->symbol (keyword->string kw)))
+
+(define (hash-ref-in h path)
+  (let ([current (hash-ref h (list/first path))]
+        [pathr   (list/rest path)])
+    (if (list/empty? pathr) current (hash-ref-in current pathr))))
 
 (define assoc
   (make-keyword-procedure

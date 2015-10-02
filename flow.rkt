@@ -1,4 +1,4 @@
-#lang racket/base
+#lang racket
 
 ;; (require (prefix-in sys/ racket/system))
 ;; (require (prefix-in cmd/ racket/cmdline))
@@ -14,6 +14,8 @@
       body ...
       (loop))))
 
+(provide process)
+
 (struct success (stdout))
 (struct failure (code stderr))
 
@@ -22,9 +24,6 @@
          [exe  (find-executable-path (list/first segs))]
          [args (list/rest segs)])
     (let-values ([(p o i e) (apply subprocess #f #f #f exe args)])
-      ;; (while (eq? 'running (subprocess-status p))
-      ;;   (ui/working feedback))
-      ;; (ui/done feedback)
       (sync p)
       (cond [(zero? (subprocess-status p))
              (success (port/port->string o))]
@@ -57,7 +56,7 @@
 
 ;; (kill-thread worker)
 (define fb (ui/ui-loop "\rComputing --------- [~a]" '("|" "/" "-" "\\") 0.2 "x"))
-(begin
+#;(begin
   (define process-in (make-channel))
   (define process-out (make-channel))
   (define worker (workq process process-in process-out))
