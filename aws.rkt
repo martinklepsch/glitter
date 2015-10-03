@@ -192,10 +192,10 @@
 (define (default-project name)
   (let* ([policy-name (string-append name "-S3FullAccess")])
     (list (aws 'create-user (hash 'UserName name))
-          ;; (aws 'put-user-policy (hash 'UserName name
-          ;;                             'PolicyName policy-name
-          ;;                             'PolicyDocument (json/jsexpr->string (policy name))))
-          ;; (aws 'create-access-key (hash 'UserName name))
+          (aws 'put-user-policy (hash 'UserName name
+                                      'PolicyName policy-name
+                                      'PolicyDocument (json/jsexpr->string (policy name))))
+          (aws 'create-access-key (hash 'UserName name))
           (aws 'create-bucket (hash 'BucketName name)))))
 
 ;; (aws-save-cmds (default-project "my-project-sf4r34rf13edsdf") "xyz")
