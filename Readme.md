@@ -31,6 +31,8 @@ glitter --new your-fancy-project
 glitter --rollback your-fancy-project.glitter
 ```
 
+---
+
 ### Contributing
 
 Glitter is written in about 500 lines of Racket and relies on `aws`
@@ -42,6 +44,8 @@ that you can make standalone executables with Racket but since
 
 That said I'll try to use it for my stuff. If it becomes to
 frustrating maybe I'll port things to Clojure.
+
+---
 
 ### License
 
