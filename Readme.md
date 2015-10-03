@@ -50,3 +50,5 @@ frustrating maybe I'll port things to Clojure.
 ### License
 
 MIT
+
+[awscli]: https://aws.amazon.com/de/cli/
