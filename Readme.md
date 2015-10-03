@@ -13,8 +13,8 @@
   `'---'              `'-'     `'-'                               
 ```
 
-Glitter is a little command line tool to create users, access keys and
-S3 buckets for static site projects.
+Glitter is a shitty wrapper around [awscli][awscli] to create users,
+access keys, inline policies and S3 buckets for static site projects.
 
 ---
 
