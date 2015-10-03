@@ -31,6 +31,8 @@ glitter --new your-fancy-project
 glitter --rollback your-fancy-project.glitter
 ```
 
+The `glitter` binary can be compiled with `raco exe glitter.rkt`.
+
 ---
 
 ### Contributing
