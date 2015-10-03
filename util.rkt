@@ -21,6 +21,19 @@
 (define (keyword->symbol kw)
   (string->symbol (keyword->string kw)))
 
+(define (zipmap keys vals)
+  (for/fold
+      ([h (hash)])
+      ([k keys]
+       [v vals])
+    (hash-set h k v)))
+
+(define (hash-filter f h)
+  (for/fold ([hn (hash)])
+            ([k  (hash-keys h)]
+             [v  (hash-values h)])
+    (if (f k v) (hash-set hn k v) hn)))
+
 (define (hash-normalize h)
   (for/hash ([(k v) (in-hash h)]) (values k v)))
 

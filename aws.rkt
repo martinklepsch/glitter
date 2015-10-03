@@ -11,7 +11,7 @@
 (require (prefix-in ui/   "ui.rkt"))
 
 
-(provide statement policy); create-user create-access-key attach-inline-policy make-bucket)
+(provide create-project rollback-project)
 
 (define (statement effect action resource)
   (hash 'Effect effect 'Action action 'Resource resource))
@@ -133,24 +133,6 @@
 
   ;(make-list n(ui/ui-loop "\rComputing --------- [~a]" '("|" "/" "-" "\\") 0.2 "x")))
 
-(define (aws-runner aws-cmds)
-  (flow/run-cmds (map aws->shell aws-cmds)
-                 #:feedbacks (map aws-feedback aws-cmds)
-                 #:verbose #t))
-
-(define sample-up
-  (let* ([name "my-project-sf4r34rf13edsdf"]
-         [policy-name (string-append name "-S3FullAccess")])
-    (list (aws 'create-user (hash 'UserName name))
-          (aws 'put-user-policy (hash 'UserName name
-                                      'PolicyName policy-name
-                                      'PolicyDocument (json/jsexpr->string (policy name))))
-          (aws 'create-access-key (hash 'UserName name))
-          (aws 'create-bucket (hash 'BucketName name)))))
-
-(define (aws-save-cmds aws-cmds)
-  ())
-
 (define (report results)
   (let ([bucket-name (hash-ref (parse-success (first results)) 'UserName)]
         [secret-key  (hash-ref (parse-success (third results)) 'SecretAccessKey)]
@@ -160,14 +142,79 @@
     (util/df "AccessKey: ~a" access-key)
     (util/df "SecretKey: ~a" secret-key)))
 
-(report results)
-(define results
-  (aws-runner sample-up))
+(define (succeeded-cmds cmds results)
+  (for/fold ([l (list)])
+            ([cmd cmds]
+             [r   results])
+    (if (flow/success? r)
+        (append l (list (cons cmd r)))
+        l)))
 
-(parse-success (third results))
-(define (reversed)
-  (map aws-reverse (reverse sample-up) (reverse results)))
-(aws-runner (reversed))
+;; (append '((1 2)) '((2 3)))
+;; (car (cons 1 2))
+
+(define (aws-write-cmds aws-cmds label)
+  (util/write-data (string-append label ".glitter") aws-cmds))
+
+(define (aws-read-cmds path)
+  (util/read-data path))
+
+(define (aws-rollback succeeded)
+  (let ([cmds (map aws-reverse
+                   (reverse (map car succeeded))
+                   (reverse (map cdr succeeded)))])
+    (flow/run-cmds (map aws->shell cmds)
+                   #:feedbacks (map aws-feedback cmds)
+                   #:verbose #t)
+    (displayln "Rollback successful")))
+
+(define (aws-runner aws-cmds #:label [label "xx"])
+  (let* ([results (flow/run-cmds (map aws->shell aws-cmds)
+                                #:feedbacks (map aws-feedback aws-cmds)
+                                #:verbose #t)]
+         [succeeded (succeeded-cmds aws-cmds results)])
+    (if (util/any? flow/failure? results)
+        (begin
+          (displayln "Rolling back after failure...")
+          (aws-rollback succeeded))
+        (begin
+          (displayln "All tasks succeded")
+          (report results)
+          (util/df "Writing rollback information to ~a.glitter" label)
+          (aws-write-cmds succeeded label)))))
+
+;; (flow/success? (flow/success "x"))
+
+;; (map aws-reverse
+;;      (reverse aws-cmds)
+;;      (reverse (filter flow/success? results)))
+
+(define (default-project name)
+  (let* ([policy-name (string-append name "-S3FullAccess")])
+    (list (aws 'create-user (hash 'UserName name))
+          ;; (aws 'put-user-policy (hash 'UserName name
+          ;;                             'PolicyName policy-name
+          ;;                             'PolicyDocument (json/jsexpr->string (policy name))))
+          ;; (aws 'create-access-key (hash 'UserName name))
+          (aws 'create-bucket (hash 'BucketName name)))))
+
+;; (aws-save-cmds (default-project "my-project-sf4r34rf13edsdf") "xyz")
+;; (aws-read-cmds "xyz.glitter")
+;; (define r (create-project "my-bucket"))
+
+;; (rollback-project "my-project-sf4r34rf13edsdf.glitter")
+;; (second (aws-read-cmds "my-project-sf4r34rf13edsdf.glitter"))
+;; (first (aws-read-cmds "my-project-sf4r34rf13edsdf.glitter"))
+(define (create-project name)
+  (aws-runner (default-project name) #:label name))
+
+(define (rollback-project path-to-rollback-file)
+  (aws-rollback (aws-read-cmds path-to-rollback-file)))
+
+;; (parse-success (third results))
+;; (define (reversed)
+;;   (map aws-reverse (reverse (default-project "my-project-sf4r34rf13edsdf")) (reverse results)))
+;; (aws-runner (reversed))
 
 ;; (define reversed-results
 ;;   (aws-runner (reversed)))

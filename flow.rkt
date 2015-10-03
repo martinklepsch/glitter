@@ -18,8 +18,8 @@
 (provide (all-defined-out))
 ;; (provide success failure process run-cmds)
 
-(struct success (stdout))
-(struct failure (code stderr))
+(struct success (stdout) #:prefab)
+(struct failure (code stderr) #:prefab)
 
 (define (process cmd)
   (let* ([segs (str/string-split cmd)]
