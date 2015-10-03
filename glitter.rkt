@@ -32,7 +32,7 @@
 ;;   (writeln " \'. __//             |   /    |   /                     |_|      ")
 ;;   (writeln "  `'---'              `'-'     `'-'                           "))
 
-(brand)
+;; (brand)
 (cond
   [(name) (aws/create-project (name))]
   [(rollback) (aws/rollback-project (rollback))]
