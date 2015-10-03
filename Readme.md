@@ -33,7 +33,9 @@ glitter --rollback your-fancy-project.glitter
 
 The `glitter` binary can be compiled with `raco exe -o glitter src/glitter.rkt`.
 
----
+### Demo
+
+[![asciicast](https://asciinema.org/a/061hvmro87di7k74gbkz15eqx.png)](https://asciinema.org/a/061hvmro87di7k74gbkz15eqx)
 
 ### Contributing
 
