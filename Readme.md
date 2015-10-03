@@ -40,9 +40,9 @@ Glitter is written in about 500 lines of Racket and relies on `aws`
 playground project for Racket and over time I got to the conclusion
 that abstracting over a shell script is not such a great idea. I liked
 that you can make standalone executables with Racket but since
-[awscli][awscli] is required it's less useful.
+[awscli][awscli] is required it's not fully standalone anyways.
 
-That said I'll try to use it for my stuff. If it becomes to
+That said I'll try to use it for my stuff. If it becomes too
 frustrating maybe I'll port things to Clojure.
 
 ---
