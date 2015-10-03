@@ -45,6 +45,11 @@ that you can make standalone executables with Racket but since
 That said I'll try to use it for my stuff. If it becomes too
 frustrating maybe I'll port things to Clojure.
 
+Some things that should be added but I probably won't do:
+
+- Cloudfront Distribution setup
+- Route 53 setup
+
 ---
 
 ### License
